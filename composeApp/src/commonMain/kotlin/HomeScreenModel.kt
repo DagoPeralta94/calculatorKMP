@@ -1,57 +1,52 @@
+import androidx.compose.runtime.mutableStateOf
 import cafe.adriel.voyager.core.model.ScreenModel
 
 class HomeScreenModel : ScreenModel {
 
-    private var numero1 = 0
-    private var numero2 = 1
-    private var operador = ""
-    private var count = 0
+    var display = mutableStateOf("0")
+    private var result = 0.0
+    private var isNewOperation = true
+    private var currentOperation: String? = null
 
-    fun setNumbers() {
-        numero1 = 0
-        numero2 = 1
-        count = 0
-    }
-
-    fun suma(numero3: Int): Int {
-        numero1 += numero3
-        operador = "suma"
-        return numero1
-    }
-
-    fun resta(numero3: Int): Int {
-        if(count == 0) {
-            numero1 = numero3
+    fun onInput(number: String) {
+        if (isNewOperation) {
+            display.value = number
+            isNewOperation = false
         } else {
-            numero1 -= numero3
+            if (display.value != "0") {
+                display.value += number
+            } else {
+                display.value = number
+            }
         }
-        count += 1
-        operador = "resta"
-        return numero1
     }
 
-    fun multiplicar(numero3: Int): Int {
-        numero2 *= numero3
-        numero1 = numero2
-        operador = "multiplicar"
-        return numero1
-    }
-
-    fun dividir(numero3: Int): Int {
-        numero2 /= numero3
-        numero1 = numero2
-        operador = "dividir"
-        return numero1
-    }
-
-    fun result(numberCache: Int): Int {
-        numero1 = when (operador) {
-            "suma" -> suma(numberCache)
-            "resta" -> resta(numberCache)
-            "multiplicar" -> multiplicar(numberCache)
-            "dividir" -> dividir(numberCache)
-            else -> 0
+    fun onOperation(operation: String) {
+        if (!isNewOperation) {
+            calculate()
         }
-        return numero1
+        currentOperation = operation
+        isNewOperation = true
     }
+
+    fun calculate() {
+        val currentNumber = display.value.toDouble()
+        result = when (currentOperation) {
+            "+" -> result + currentNumber
+            "-" -> result - currentNumber
+            "*" -> result * currentNumber
+            "/" -> if (currentNumber == 0.0) Double.NaN else result / currentNumber
+            else -> currentNumber
+        }
+        display.value = if (result.isNaN()) "Error" else result.toString()
+        isNewOperation = true
+    }
+
+    fun clear() {
+        display.value = "0"
+        result = 0.0
+        isNewOperation = true
+        currentOperation = null
+    }
+
 }
